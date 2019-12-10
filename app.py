@@ -7,8 +7,8 @@
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-import plotly.graph_objs as go
 import pandas as pd
+import plotly.graph_objs as go
 
 filename = 'nama_10_gdp_1_Data.csv'
 
@@ -21,9 +21,7 @@ df['Value'] = df['Value'].str.replace(',', '.')
 df['Value'] = df['Value'].apply(numeric)
 df.dropna(inplace=True)
 
-app = dash.Dash(__name__)
-server = app.server
-app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
+app = dash.Dash()
 
 available_indicators = df['NA_ITEM'].unique()
 available_units = df['UNIT'].unique()
@@ -95,7 +93,7 @@ app.layout = html.Div([
             dcc.Dropdown(
                 id='country-value',
                 options=[{'label': i,'value': i} for i in available_countries],
-                placeholder = 'Click/Choose Country'
+                value = 'Cyprus'
             ),
             dcc.RadioItems(
                 id='unit',
@@ -158,15 +156,6 @@ def update_graph(xaxis_column_name, yaxis_column_name,
             clickmode= 'event+select'
         )
     }
-
-
-@app.callback(
-    dash.dependencies.Output('country-value','value'),
-    [dash.dependencies.Input('indicator-graphic','clickData')])
-def update_country(click):   
-    country_name = click['points'][0]['text']
-    return country_name
-
 @app.callback(
     dash.dependencies.Output('country-indicator', 'figure'),
     [dash.dependencies.Input('country-value', 'value'),
@@ -174,7 +163,7 @@ def update_country(click):
      dash.dependencies.Input('indicator', 'value')])
 def update_line(country_value, unit_v, indicator_column_name):
     dff = df[df['UNIT'] == unit_v]
-        
+    
     return {
         'data': [go.Scatter(
             x=dff['TIME'].unique(),
@@ -203,10 +192,4 @@ def update_line(country_value, unit_v, indicator_column_name):
     }
 if __name__ == '__main__':
     app.run_server()
-
-
-# In[ ]:
-
-
-
 
