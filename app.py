@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[30]:
-
-
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -203,16 +197,3 @@ def update_line(country_value, unit_v, indicator_column_name):
     }
 if __name__ == '__main__':
     app.run_server()
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
