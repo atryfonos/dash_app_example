@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[ ]:
+
+
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -150,7 +156,7 @@ def update_graph(xaxis_column_name, yaxis_column_name,
             margin={'l': 70, 'b': 40, 't': 10, 'r': 20},
             hovermode='closest',
             legend={'x':0,'y':1},
-            clickmode= 'event+select'
+            #clickmode= 'event+select'
         )
     }
 
@@ -159,7 +165,8 @@ def update_graph(xaxis_column_name, yaxis_column_name,
     dash.dependencies.Output('country-value','value'),
     [dash.dependencies.Input('indicator-graphic','clickData')])
 def update_country(click):   
-    return click['points'][0]['text']
+    country_name = click['points'][0]['text']
+    return country_name
 
 @app.callback(
     dash.dependencies.Output('country-indicator', 'figure'),
@@ -197,3 +204,10 @@ def update_line(country_value, unit_v, indicator_column_name):
     }
 if __name__ == '__main__':
     app.run_server()
+
+
+# In[ ]:
+
+
+
+
