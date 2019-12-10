@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[3]:
+# In[30]:
 
 
 import dash
@@ -19,6 +19,7 @@ def numeric(x):
 df['Value'] = df['Value'].str.replace('.','')
 df['Value'] = df['Value'].str.replace(',', '.')
 df['Value'] = df['Value'].apply(numeric)
+df.dropna(inplace=True)
 
 app = dash.Dash(__name__)
 server = app.server
@@ -65,14 +66,15 @@ app.layout = html.Div([
                 ),
                 dcc.RadioItems(
                     id='yaxis-type',
-                    options = [{'labels': i,'value': i} for i in ['Linear', 'Log']],
+                    options = [{'label': i,'value': i} for i in ['Linear', 'Log']],
                     value='Linear',
                     labelStyle={'display':'inline-block'}
                 )
             ],style={'width':'48%','float':'right','display':'inline-block'}),
         ]),
     
-        dcc.Graph(id='indicator-graphic'),
+        dcc.Graph(id='indicator-graphic',
+                 clickData = {'points':[{'customdata': 'Japan'}]}),
     
         dcc.Slider(
             id='year--slider',
@@ -94,7 +96,7 @@ app.layout = html.Div([
             dcc.Dropdown(
                 id='country-value',
                 options=[{'label': i,'value': i} for i in available_countries],
-                value = 'Cyprus'
+                placeholder = 'Click/Choose Country'
             ),
             dcc.RadioItems(
                 id='unit',
@@ -153,9 +155,18 @@ def update_graph(xaxis_column_name, yaxis_column_name,
             },
             margin={'l': 70, 'b': 40, 't': 10, 'r': 20},
             hovermode='closest',
-            legend={'x':0,'y':1}
+            legend={'x':0,'y':1},
+            clickmode= 'event+select'
         )
     }
+
+
+@app.callback(
+    dash.dependencies.Output('country-value','value'),
+    [dash.dependencies.Input('indicator-graphic','clickData')])
+def update_country(click):   
+    return click['points'][0]['text']
+
 @app.callback(
     dash.dependencies.Output('country-indicator', 'figure'),
     [dash.dependencies.Input('country-value', 'value'),
@@ -163,7 +174,7 @@ def update_graph(xaxis_column_name, yaxis_column_name,
      dash.dependencies.Input('indicator', 'value')])
 def update_line(country_value, unit_v, indicator_column_name):
     dff = df[df['UNIT'] == unit_v]
-    
+        
     return {
         'data': [go.Scatter(
             x=dff['TIME'].unique(),
