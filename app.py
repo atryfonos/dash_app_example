@@ -23,6 +23,7 @@ def numeric(x):
 df['Value'] = df['Value'].str.replace('.', '')
 df['Value'] = df['Value'].str.replace(',', '.')
 df['Value'] = df['Value'].apply(numeric)
+df.dropna(inplace=True)
 
 app = dash.Dash(__name__)
 server = app.server
