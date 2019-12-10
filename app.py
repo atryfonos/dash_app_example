@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[3]:
+# In[1]:
 
 
 import dash
@@ -12,17 +12,14 @@ import pandas as pd
 
 filename = 'nama_10_gdp_1_Data.csv'
 
-df = pd.read_csv(filename, header=0, na_values=':')
-
-
+df = pd.read_csv(filename, header = 0, na_values = ':')
 def numeric(x):
     y = pd.to_numeric(x, errors='coerce')
     return y
-
-
-df['Value'] = df['Value'].str.replace('.', '')
+df['Value'] = df['Value'].str.replace('.','')
 df['Value'] = df['Value'].str.replace(',', '.')
 df['Value'] = df['Value'].apply(numeric)
+df.dropna(inplace=True)
 
 app = dash.Dash(__name__)
 server = app.server
@@ -39,88 +36,87 @@ app.layout = html.Div([
         html.H2(children='''Comparing different Indicators against each other for all countries'''),
 
         html.Div([
-
+        
             html.Div([
                 dcc.Dropdown(
                     id='xaxis-column',
-                    options=[{'label': i, 'value': i} for i in available_indicators],
-                    value='Gross domestic product at market prices'
+                    options=[{'label':i, 'value': i} for i in available_indicators],
+                    value = 'Gross domestic product at market prices'
                 ),
                 dcc.RadioItems(
                     id='xaxis-type',
-                    options=[{'label': i, 'value': i} for i in ['Linear', 'Log']],
-                    value='Linear',
-                    labelStyle={'display': 'inline-block'}
+                    options = [{'label': i,'value': i} for i in ['Linear', 'Log']],
+                    value = 'Linear',
+                    labelStyle={'display':'inline-block'}
                 ),
                 dcc.RadioItems(
                     id='unit-value',
-                    options=[{'label': i, 'value': i} for i in available_units],
-                    value='Chain linked volumes, index 2010=100',
-                    labelStyle={'display': 'inline-block'}
+                    options = [{'label': i, 'value': i} for i in available_units],
+                    value = 'Chain linked volumes, index 2010=100',
+                    labelStyle={'display':'inline-block'}
                 )
             ],
-                style={'width': '48%', 'display': 'inline-block'}),
-
+            style={'width':'48%', 'display':'inline-block'}),
+        
             html.Div([
                 dcc.Dropdown(
                     id='yaxis-column',
-                    options=[{'label': i, 'value': i}for i in available_indicators],
+                    options=[{'label':i, 'value':i}for i in available_indicators],
                     value='Value added, gross'
                 ),
                 dcc.RadioItems(
                     id='yaxis-type',
-                    options=[{'label': i, 'value': i} for i in ['Linear', 'Log']],
+                    options = [{'label': i,'value': i} for i in ['Linear', 'Log']],
                     value='Linear',
-                    labelStyle={'display': 'inline-block'}
+                    labelStyle={'display':'inline-block'}
                 )
-            ], style={'width': '48%', 'float': 'right', 'display': 'inline-block'}),
+            ],style={'width':'48%','float':'right','display':'inline-block'}),
         ]),
-
+    
         dcc.Graph(id='indicator-graphic'),
-
+    
         dcc.Slider(
             id='year--slider',
             min=df['TIME'].min(),
             max=df['TIME'].max(),
             value=df['TIME'].max(),
             step=None,
-            marks={str(year): str(year) for year in df['TIME'].unique()}
+            marks={str(year):str(year) for year in df['TIME'].unique()}
         ),
     ]),
-
+    
     html.Div([
         html.H1(),
         html.H1(),
         html.H1(children='Graph No2'),
         html.H2(children='''Looking for trends in indicators for a country'''),
-
+        
         html.Div([
             dcc.Dropdown(
                 id='country-value',
-                options=[{'label': i, 'value': i} for i in available_countries],
-                value='Cyprus'
+                options=[{'label': i,'value': i} for i in available_countries],
+                placeholder = 'Click/Choose Country'
             ),
             dcc.RadioItems(
                 id='unit',
-                options=[{'label': i, 'value': i} for i in available_units],
-                value='Chain linked volumes, index 2010=100',
-                labelStyle={'display': 'inline-block'}
+                options = [{'label': i, 'value': i} for i in available_units],
+                value = 'Chain linked volumes, index 2010=100',
+                labelStyle={'display':'inline-block'}
             )
-        ], style={'width': '48%', 'display': 'inline-block'}),
-
+        ], style = {'width': '48%', 'display':'inline-block'}),
+        
         html.Div([
             dcc.Dropdown(
                 id='indicator',
-                options=[{'label': i, 'value': i} for i in available_indicators],
-                value='Value added, gross'
+                options=[{'label': i, 'value':i} for i in available_indicators],
+                value = 'Value added, gross'
             )
-        ], style={'width': '48%', 'float': 'right', 'display': 'inline-block'}),
-
+        ],style={'width': '48%', 'float': 'right', 'display': 'inline-block'}),
+        
         dcc.Graph(id='country-indicator')
-
-    ])
+        
+        ])
 ])
-
 
 @app.callback(
     dash.dependencies.Output('indicator-graphic', 'figure'),
@@ -128,13 +124,13 @@ app.layout = html.Div([
      dash.dependencies.Input('yaxis-column', 'value'),
      dash.dependencies.Input('xaxis-type', 'value'),
      dash.dependencies.Input('yaxis-type', 'value'),
-     dash.dependencies.Input('unit-value', 'value'),
+     dash.dependencies.Input('unit-value','value'),
      dash.dependencies.Input('year--slider', 'value')])
 def update_graph(xaxis_column_name, yaxis_column_name,
                  xaxis_type, yaxis_type, unit_value,
                  year_value):
     dff = df[(df['TIME'] == year_value) & (df['UNIT'] == unit_value)]
-
+    
     return {
         'data': [go.Scatter(
             x=dff[dff['NA_ITEM'] == xaxis_column_name]['Value'],
@@ -158,24 +154,31 @@ def update_graph(xaxis_column_name, yaxis_column_name,
             },
             margin={'l': 70, 'b': 40, 't': 10, 'r': 20},
             hovermode='closest',
-            legend={'x': 0, 'y': 1}
+            legend={'x':0,'y':1},
+            clickmode= 'event+select'
         )
     }
 
 
 @app.callback(
+    dash.dependencies.Output('country-value','value'),
+    [dash.dependencies.Input('indicator-graphic','clickData')])
+def update_country(click):   
+    country_name = click['points'][0]['text']
+    return country_name
+
+@app.callback(
     dash.dependencies.Output('country-indicator', 'figure'),
     [dash.dependencies.Input('country-value', 'value'),
-     dash.dependencies.Input('unit', 'value'),
+     dash.dependencies.Input('unit','value'),
      dash.dependencies.Input('indicator', 'value')])
 def update_line(country_value, unit_v, indicator_column_name):
     dff = df[df['UNIT'] == unit_v]
-
+        
     return {
         'data': [go.Scatter(
             x=dff['TIME'].unique(),
-            y=dff[(dff['NA_ITEM'] == indicator_column_name)
-                  & (dff['GEO'] == country_value)]['Value'],
+            y=dff[(dff['NA_ITEM'] == indicator_column_name)&(dff['GEO'] == country_value)]['Value'],
             text=dff[dff['NA_ITEM'] == indicator_column_name]['NA_ITEM'],
             mode='lines',
             marker={
@@ -195,11 +198,9 @@ def update_line(country_value, unit_v, indicator_column_name):
             },
             margin={'l': 70, 'b': 40, 't': 10, 'r': 20},
             hovermode='closest',
-            legend={'x': 0, 'y': 1}
+            legend={'x':0,'y':1}
         )
     }
-
-
 if __name__ == '__main__':
     app.run_server()
 
@@ -207,4 +208,5 @@ if __name__ == '__main__':
 # In[ ]:
 
 
-# In[ ]:
+
+
